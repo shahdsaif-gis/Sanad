@@ -1,0 +1,224 @@
+/* =====================================================================
+   FX layer — motion & polish on top of style.css
+   Everything animated here is transform / opacity / translate only (GPU friendly).
+   Delete the <link> to fx.css (and fx.js) to get the plain version back.
+   ===================================================================== */
+:root{--ease:cubic-bezier(.2,.8,.2,1);--ease-io:cubic-bezier(.65,0,.35,1)}
+
+/* ---------- Loader ---------- */
+#loader{
+  position:fixed;inset:0;z-index:6000;display:grid;place-content:center;justify-items:center;gap:22px;
+  background:linear-gradient(160deg,#eef7fb,var(--glacier));
+  transition:opacity .6s var(--ease),visibility .6s;
+  animation:ldOut .6s 3s forwards; /* fallback: never trap the user */
+}
+#loader.hide{opacity:0;visibility:hidden}
+.ld-logo{
+  width:72px;height:72px;border-radius:22px;display:grid;place-items:center;color:#fff;font-size:3rem;font-weight:800;line-height:1;
+  background:linear-gradient(135deg,var(--l2),var(--l4));box-shadow:0 18px 50px rgba(2,56,89,.35);
+  animation:ldPop 1.2s var(--ease) infinite alternate;
+}
+.ld-bar{width:130px;height:4px;border-radius:4px;background:rgba(2,56,89,.12);overflow:hidden}
+.ld-bar i{display:block;height:100%;width:45%;border-radius:4px;background:linear-gradient(90deg,var(--l2),var(--l4));animation:ldBar 1s var(--ease-io) infinite}
+@keyframes ldPop{to{transform:scale(1.08) rotate(4deg)}}
+@keyframes ldBar{0%{transform:translateX(-120%)}100%{transform:translateX(320%)}}
+@keyframes ldOut{to{opacity:0;visibility:hidden}}
+
+/* ---------- Scroll progress ---------- */
+#progress{
+  position:fixed;top:0;inset-inline:0;height:3px;z-index:5000;pointer-events:none;
+  background:linear-gradient(90deg,var(--l1),var(--l2),var(--l4));transform:scaleX(0);transform-origin:left;
+}
+html[dir="rtl"] #progress{transform-origin:right}
+
+/* ---------- Background: animated gradient + particles ---------- */
+body::before{
+  content:"";position:fixed;inset:-25%;z-index:-3;pointer-events:none;
+  background:
+    radial-gradient(38% 34% at 22% 22%,rgba(167,235,242,.55),transparent 70%),
+    radial-gradient(34% 38% at 82% 58%,rgba(84,172,191,.26),transparent 70%),
+    radial-gradient(40% 30% at 45% 92%,rgba(98,155,181,.22),transparent 70%);
+  animation:bgDrift 26s ease-in-out infinite alternate;
+}
+@keyframes bgDrift{to{transform:translate3d(4%,3%,0) scale(1.08) rotate(3deg)}}
+#fx-canvas{position:fixed;inset:0;z-index:-1;pointer-events:none}
+.blob{transition:translate .9s var(--ease);animation:blobFloat 18s ease-in-out infinite alternate}
+.b2{animation-duration:22s}.b3{animation-duration:26s}
+@keyframes blobFloat{to{transform:translate3d(30px,-24px,0) scale(1.08)}}
+
+/* ---------- Nav ---------- */
+.nav{transition:padding .35s var(--ease),box-shadow .35s,background .35s,top .35s}
+.nav.scrolled{padding-block:6px;box-shadow:0 14px 40px rgba(2,56,89,.2);background:rgba(255,255,255,.78)}
+.nav-links a{position:relative;padding-block:4px}
+.nav-links a::after{content:"";position:absolute;inset-inline:0;bottom:-2px;height:2px;border-radius:2px;background:var(--l2);transform:scaleX(0);transition:transform .35s var(--ease)}
+.nav-links a:hover::after{transform:scaleX(1)}
+
+/* ---------- Hero entrance ---------- */
+.js .hero-text .tag,.js .hero-text .lead,.js .hero-cta,.js .hero-visual{
+  opacity:0;translate:0 30px;transition:opacity .9s var(--ease),translate .9s var(--ease);
+}
+.js.hero-ready .hero-text .tag{opacity:1;translate:0 0;transition-delay:.05s}
+.js.hero-ready .hero-text .lead{opacity:1;translate:0 0;transition-delay:.55s}
+.js.hero-ready .hero-cta{opacity:1;translate:0 0;transition-delay:.7s}
+.js.hero-ready .hero-visual{opacity:1;translate:0 0;transition-delay:.3s}
+/* staggered words */
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.14em;margin-bottom:-.14em}
+.w>span{display:inline-block}
+.js .w>span{transform:translateY(115%)}
+.js.hero-ready .w>span{transform:none;transition:transform 1s var(--ease);transition-delay:calc(var(--i,0)*110ms + .25s)}
+
+/* hero visual layers */
+[data-depth],[data-scroll]{transition:translate .7s var(--ease)}
+.arch{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .35s var(--ease),translate .7s var(--ease);will-change:transform}
+.route-art .trail{filter:drop-shadow(0 0 6px rgba(255,255,255,.95))}
+.chip{transition:translate .7s var(--ease),box-shadow .3s}
+.chip:hover{box-shadow:0 18px 44px rgba(2,56,89,.22),0 0 0 4px rgba(167,235,242,.45)}
+
+/* ---------- Scroll reveal ---------- */
+.js [data-reveal]:not(.tiles){opacity:0;translate:0 34px;transition:opacity .85s var(--ease),translate .85s var(--ease)}
+.js [data-reveal].in:not(.tiles){opacity:1;translate:0 0}
+.js .tiles[data-reveal] .tile{
+  opacity:0;translate:0 30px;scale:.94;
+  transition:opacity .7s var(--ease) calc(var(--i,0)*50ms),translate .7s var(--ease) calc(var(--i,0)*50ms),scale .7s var(--ease) calc(var(--i,0)*50ms),
+             transform .25s ease-out,background .25s,border-color .25s,color .25s,box-shadow .3s;
+}
+.js .tiles[data-reveal].in .tile{opacity:1;translate:0 0;scale:1}
+.js .tiles.settled .tile{transition:transform .25s ease-out,translate .3s var(--ease),scale .2s var(--ease),background .25s,border-color .25s,color .25s,box-shadow .3s,opacity .3s}
+
+/* ---------- Buttons: hover, press, ripple, glow, magnetic ---------- */
+.btn,.pill,.link{-webkit-tap-highlight-color:transparent}
+.btn,.pill{position:relative;overflow:hidden;transition:background .25s,box-shadow .3s,color .25s,translate .3s var(--ease),scale .2s var(--ease),opacity .25s}
+.sos{position:relative;transition:translate .3s var(--ease),scale .2s var(--ease),filter .2s}
+.btn.primary::before{
+  content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);
+  transform:translateX(-120%);transition:transform .7s var(--ease);pointer-events:none;
+}
+.btn.primary:hover:not(:disabled)::before{transform:translateX(120%)}
+.btn.primary:hover:not(:disabled){box-shadow:0 14px 34px rgba(2,56,89,.38),0 0 0 6px rgba(84,172,191,.2)}
+.btn.ghost:hover{background:#fff;box-shadow:0 10px 26px rgba(2,56,89,.16)}
+.btn:active:not(:disabled),.pill:active,.sos:active,.tile:active{scale:.95}
+.btn .arrow{transition:translate .3s var(--ease),background .25s}
+.btn:hover .arrow{translate:3px -3px}
+[dir="rtl"] .btn:hover .arrow{translate:-3px -3px}
+.sos::after{
+  content:"";position:absolute;inset:0;border-radius:inherit;border:2px solid var(--sos);opacity:0;pointer-events:none;
+  animation:sosRing 2.8s var(--ease) infinite;
+}
+@keyframes sosRing{0%{transform:scale(1);opacity:.7}70%,100%{transform:scale(1.35,1.7);opacity:0}}
+.ripple{position:absolute;border-radius:50%;pointer-events:none;background:rgba(255,255,255,.55);transform:scale(0);animation:ripple .65s var(--ease) forwards}
+.tile .ripple{background:rgba(38,101,140,.22)}
+.tile[aria-pressed="true"] .ripple{background:rgba(255,255,255,.35)}
+@keyframes ripple{to{transform:scale(1);opacity:0}}
+.btn.loading{pointer-events:none;opacity:.85}
+.btn.loading .arrow{visibility:hidden}
+.btn.loading::after{
+  content:"";position:absolute;inset-inline-end:22px;top:50%;width:18px;height:18px;margin-top:-9px;border-radius:50%;
+  border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.link{transition:color .2s,opacity .2s}.link:hover{color:var(--l2)}
+:focus-visible{outline:3px solid var(--l2);outline-offset:3px;border-radius:12px}
+
+/* ---------- Tiles & cards: depth, tilt, glow ---------- */
+.tile{overflow:hidden;transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));will-change:transform}
+.tile:hover{transform:perspective(800px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) translateY(-4px);box-shadow:0 22px 50px rgba(2,56,89,.2)}
+.tile>*,.hcard>*{position:relative}
+.tile::before,.hcard::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:radial-gradient(220px circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.95),transparent 62%);
+}
+.tile:hover::before,.hcard:hover::before{opacity:.85}
+.tile[aria-pressed="true"]::before{background:radial-gradient(200px circle at var(--gx,50%) var(--gy,50%),rgba(167,235,242,.4),transparent 62%)}
+.tile .ico{transition:transform .45s var(--ease),background .3s,box-shadow .3s}
+.tile:hover .ico{transform:scale(1.1);box-shadow:0 0 0 6px rgba(167,235,242,.35)}
+.tile:hover .ico svg.ic{transform:scale(1.12) rotate(-7deg)}
+svg.ic{transition:transform .4s var(--ease)}
+.tile[aria-pressed="true"]::after{animation:badgeIn .45s var(--ease)}
+@keyframes badgeIn{from{transform:scale(0) rotate(-90deg)}to{transform:none}}
+.tile[aria-pressed="true"]{box-shadow:0 18px 40px rgba(2,56,89,.32),0 0 0 4px rgba(84,172,191,.25)}
+
+.hcard{position:relative;transition:translate .3s var(--ease),box-shadow .3s,border-color .25s,background .25s}
+.hcard:hover{translate:0 -3px;box-shadow:0 22px 50px rgba(2,56,89,.2)}
+.js .hcard{animation:cardIn .7s var(--ease) backwards;animation-delay:calc(var(--i,0)*70ms)}
+@keyframes cardIn{from{opacity:0;translate:0 26px;scale:.97}}
+.hcard.active{box-shadow:0 22px 50px rgba(2,56,89,.24),0 0 0 4px rgba(84,172,191,.25)}
+.more summary{transition:color .2s}.more summary:hover{color:var(--l2)}
+.more[open] dl{animation:openDl .45s var(--ease)}
+@keyframes openDl{from{opacity:0;translate:0 -8px;scale:.98}}
+.badge{transition:transform .3s var(--ease)}.hcard:hover .badge{transform:scale(1.04)}
+
+/* ---------- Skeleton (loading state) ---------- */
+.skel-card{display:grid;gap:12px;padding:18px;border-radius:24px}
+.skel{height:14px;border-radius:8px;background:linear-gradient(90deg,rgba(255,255,255,.35) 25%,rgba(255,255,255,.95) 50%,rgba(255,255,255,.35) 75%);background-size:200% 100%;animation:shimmer 1.3s linear infinite}
+.skel.w80{width:80%}.skel.w60{width:60%}.skel.w40{width:40%}
+@keyframes shimmer{to{background-position:-200% 0}}
+
+/* ---------- Map ---------- */
+.mk-h{animation:mkPop .55s var(--ease) backwards}
+@keyframes mkPop{from{transform:scale(0)}}
+.mk-h{transition:transform .3s var(--ease),background .3s}
+.route-info.pop{animation:fadeUp .5s var(--ease)}
+@keyframes fadeUp{from{opacity:0;translate:0 14px}to{opacity:1;translate:0 0}}
+.leaflet-container{font-family:'Cairo',system-ui,sans-serif}
+
+/* ---------- Modal ---------- */
+.modal:not(.hidden){animation:fadeIn .3s ease}
+.modal:not(.hidden) .modal-card{animation:pop .5s var(--ease)}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes pop{from{opacity:0;transform:translateY(24px) scale(.92)}}
+.sos-icon{animation:pulseSoft 2.4s ease-in-out infinite}
+.sos-icon.ok{animation:okPop .6s var(--ease)}
+@keyframes pulseSoft{50%{transform:scale(1.07)}}
+@keyframes okPop{from{transform:scale(0) rotate(-45deg)}}
+
+/* ---------- Toasts (feedback) ---------- */
+#toasts{position:fixed;inset-inline:0;bottom:92px;z-index:4500;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 14px}
+.toast{
+  display:flex;align-items:center;gap:10px;max-width:min(92vw,440px);padding:11px 18px;border-radius:999px;font-weight:800;font-size:.92rem;
+  color:var(--l4);background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  border:1px solid #fff;box-shadow:0 14px 38px rgba(2,56,89,.24);animation:toastIn .5s var(--ease);
+}
+.toast.out{animation:toastOut .4s var(--ease) forwards}
+.toast .ti{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;flex:none;color:#fff;background:var(--l3)}
+.toast.success .ti{background:var(--ok)}.toast.error .ti{background:var(--sos)}
+.toast svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+@keyframes toastIn{from{opacity:0;transform:translateY(20px) scale(.9)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px) scale(.95)}}
+
+
+/* ---------- Results section, area chips, active marker ---------- */
+#results:not(.hidden){animation:sectionIn .8s var(--ease) backwards}
+@keyframes sectionIn{from{opacity:0;translate:0 40px}}
+.locality button{animation:chipIn .45s var(--ease) backwards;animation-delay:calc(var(--i,0)*45ms);transition:background .25s,color .25s,scale .15s}
+.locality button:active{scale:.94}
+@keyframes chipIn{from{opacity:0;scale:.8;translate:0 8px}}
+.mk-h.on{box-shadow:0 0 0 6px rgba(229,72,77,.22),0 4px 14px rgba(1,28,64,.35)}
+.more dl{overflow:hidden}
+.hero-visual .arch::after{
+  content:"";position:absolute;inset:0;pointer-events:none;translate:-120% 0;
+  background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);animation:sheen 6s ease-in-out 2s infinite;
+}
+@keyframes sheen{0%,60%{translate:-120% 0}100%{translate:120% 0}}
+@media (max-width:700px){
+  .blob{filter:blur(60px);opacity:.4}.b3{display:none}
+  .glass{-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  #toasts{bottom:104px}
+}
+
+/* ---------- Footer ---------- */
+.footer{transition:opacity .8s}
+
+/* ---------- Reduced motion & touch ---------- */
+@media (hover:none){
+  .tile:hover{transform:none}
+  .tile::before,.hcard::before{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0ms!important;scroll-behavior:auto!important}
+  #loader,#fx-canvas,.trail,.sos::after{display:none!important}
+  .js [data-reveal],.js .tiles[data-reveal] .tile,.js .hero-text .tag,.js .hero-text .lead,.js .hero-cta,.js .hero-visual{opacity:1!important;translate:none!important;scale:1!important}
+  .js .w>span{transform:none!important}
+}
+
+/* keep card shadows/glow from being clipped by the scrolling list */
+.list{padding:10px 10px 30px;margin:-10px -10px -20px}

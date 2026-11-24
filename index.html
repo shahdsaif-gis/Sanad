@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sanad | سَنَد</title>
+  <script>document.documentElement.classList.add('js')</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="fx.css">
+</head>
+<body>
+  <!-- loader / progress / toasts -->
+  <div id="loader" aria-hidden="true"><div class="ld-logo">+</div><div class="ld-bar"><i></i></div></div>
+  <div id="progress" aria-hidden="true"></div>
+  <div id="toasts" aria-live="polite"></div>
+
+  <div class="blob b1" data-scroll="-0.08"></div><div class="blob b2" data-scroll="0.1"></div><div class="blob b3" data-scroll="-0.06"></div>
+  <canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+  <!-- ============ NAV ============ -->
+  <header class="nav glass">
+    <a class="brand" href="#home">
+      <span class="logo">+</span>
+      <span class="brand-name" data-i18n="brand"></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#need" data-i18n="nav_find"></a>
+    </nav>
+    <div class="nav-actions">
+      <button id="langBtn" class="pill" type="button">EN</button>
+      <button id="sosBtn" class="sos" type="button"><span class="i" data-icon="ambulance"></span> <span data-i18n="sos"></span></button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section id="home" class="hero">
+      <div class="hero-text">
+        <span class="tag" data-i18n="hero_tag"></span>
+        <h1>
+          <span class="h1a" data-i18n="hero_h1a"></span>
+          <span class="h1b" data-i18n="hero_h1b"></span>
+        </h1>
+        <p class="lead" data-i18n="hero_p"></p>
+        <div class="hero-cta">
+          <a href="#need" class="btn primary"><span data-i18n="hero_cta"></span> <span class="arrow"><span class="i" data-icon="arrow"></span></span></a>
+          <button id="heroSos" class="btn ghost" type="button"><span class="i" data-icon="ambulance"></span> <span data-i18n="sos"></span></button>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="arch glass" data-depth="0.5" data-scroll="0.04">
+          <svg viewBox="0 0 300 380" class="route-art" aria-hidden="true">
+            <path id="routePath" class="dash" d="M70 320 C 70 230, 235 250, 205 160 S 150 110, 150 92" />
+            <circle cx="70" cy="320" r="16" class="ring"/>
+            <circle cx="70" cy="320" r="7" fill="#fff"/>
+            <circle class="trail" r="6" fill="#fff">
+              <animateMotion dur="4.5s" repeatCount="indefinite" rotate="auto" keyPoints="0;1" keyTimes="0;1" calcMode="spline" keySplines=".5 0 .5 1">
+                <mpath href="#routePath"/>
+              </animateMotion>
+            </circle>
+            <g transform="translate(150 70)">
+              <path d="M0 40 C -26 8 -26 -22 0 -22 C 26 -22 26 8 0 40Z" fill="#023859"/>
+              <rect x="-3.5" y="-12" width="7" height="22" rx="2" fill="#fff"/>
+              <rect x="-11" y="-4.5" width="22" height="7" rx="2" fill="#fff"/>
+            </g>
+          </svg>
+        </div>
+        <div class="chip c1 glass" data-depth="1.2"><b><span id="cntH"></span> <span data-i18n="chip1_t"></span></b><small data-i18n="chip1_s"></small></div>
+        <div class="chip c2 glass" data-depth="-1"><b data-i18n="chip2_t"></b><small data-i18n="chip2_s"></small></div>
+        <div class="chip c3 glass" data-depth="1.6"><b data-i18n="chip3_t"></b><small data-i18n="chip3_s"></small></div>
+      </div>
+    </section>
+
+    <!-- ============ STEP 1: CHOOSE ============ -->
+    <section id="need" class="section">
+      <div class="section-head" data-reveal>
+        <span class="tag" data-i18n="step1"></span>
+        <h2 data-i18n="need_title"></h2>
+        <p data-i18n="need_sub"></p>
+      </div>
+
+      <h3 class="group" data-reveal data-i18n="group_urgent"></h3>
+      <div class="tiles" id="tiles-urgent" data-reveal></div>
+
+      <h3 class="group" data-reveal data-i18n="group_spec"></h3>
+      <div class="tiles" id="tiles-spec" data-reveal></div>
+
+      <h3 class="group" data-reveal data-i18n="group_diag"></h3>
+      <div class="tiles" id="tiles-diag" data-reveal></div>
+
+      <div class="action-bar glass">
+        <div class="sel-summary">
+          <span id="selectedSummary"></span>
+          <button id="clearBtn" class="link hidden" type="button" data-i18n="clear"></button>
+        </div>
+        <button id="findBtn" class="btn primary" type="button" disabled>
+          <span data-i18n="find"></span> <span class="arrow"><span class="i" data-icon="arrow"></span></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ RESULTS ============ -->
+    <section id="results" class="section hidden">
+      <div class="section-head" data-reveal>
+        <span class="tag" data-i18n="step2"></span>
+        <h2 data-i18n="res_title"></h2>
+      </div>
+
+      <div class="loc-bar glass" data-reveal>
+        <span id="locStatus"></span>
+        <button id="changeLoc" class="link" type="button" data-i18n="loc_change"></button>
+      </div>
+      <div id="localityBox" class="locality hidden"></div>
+
+      <div class="results-grid">
+        <div class="map-wrap glass" data-reveal>
+          <div id="map"></div>
+          <div id="routeInfo" class="route-info glass hidden"></div>
+        </div>
+        <div id="list" class="list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="brand"><span class="logo">+</span><span class="brand-name" data-i18n="brand"></span></div>
+    <p class="warn" data-i18n="foot_warn"></p>
+  </footer>
+
+  <!-- ============ AMBULANCE MODAL ============ -->
+  <div id="sosModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card glass">
+      <div id="sosStep1">
+        <div class="sos-icon"><span class="i" data-icon="ambulance"></span></div>
+        <h3 data-i18n="sos_title"></h3>
+        <p data-i18n="sos_sub"></p>
+        <div id="sosLoc" class="locality"></div>
+        <div class="modal-actions">
+          <button id="sosConfirm" class="btn sosbtn" type="button" disabled data-i18n="sos_confirm"></button>
+          <button class="btn ghost sosClose" type="button" data-i18n="cancel"></button>
+        </div>
+      </div>
+      <div id="sosStep2" class="hidden">
+        <div class="sos-icon ok"><span class="i" data-icon="check"></span></div>
+        <h3 data-i18n="sos_sent"></h3>
+        <p id="sosResult"></p>
+        <p class="notice" data-i18n="sos_demo"></p>
+        <div class="modal-actions">
+          <a id="sosCall" class="btn sosbtn hidden" href="#"></a>
+          <button class="btn ghost sosClose" type="button" data-i18n="close"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="data.js"></script>
+  <script src="fx.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
